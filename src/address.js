@@ -32,13 +32,25 @@ function fromBech32 (address) {
 }
 
 function toBase58Check (hash, version) {
-  typeforce(types.tuple(types.Hash160bit, types.UInt8), arguments)
+  // see https://github.com/iancoleman/bip39/pull/212
+  if (version < 256){
+    typeforce(types.tuple(types.Hash160bit, types.UInt8), arguments)
 
-  var payload = Buffer.allocUnsafe(21)
-  payload.writeUInt8(version, 0)
-  hash.copy(payload, 1)
+    var payload = Buffer.allocUnsafe(21)
+    payload.writeUInt8(version, 0)
+    hash.copy(payload, 1)
 
-  return bs58check.encode(payload)
+    return bs58check.encode(payload)
+  }
+  else{
+    typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
+
+    var payload = Buffer.allocUnsafe(22)
+    payload.writeUInt16BE(version, 0)
+    hash.copy(payload, 2)
+
+    return bs58check.encode(payload)
+  }
 }
 
 function toBech32 (data, version, prefix) {
